@@ -31,3 +31,9 @@ app.post("/order", async (req, res) => {
 app.listen(process.env.PORT || 3000, () =>
   console.log("CLOB Proxy ready on port", process.env.PORT || 3000)
 );
+
+// Endpoint debug — voir l'IP externe du serveur Render
+app.get("/debug-ip", async (req, res) => {
+  const r = await fetch("https://ipinfo.io/json");
+  res.json(await r.json());
+});
