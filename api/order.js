@@ -1,13 +1,13 @@
-const express = require("express");
-const app = express();
-app.use(express.json());
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-const SECRET = process.env.PROXY_SECRET;
-
-app.post("/order", async (req, res) => {
-  if (req.headers["x-proxy-secret"] !== SECRET) {
+  const secret = req.headers["x-proxy-secret"];
+  if (secret !== process.env.PROXY_SECRET) {
     return res.status(401).json({ error: "Unauthorized" });
   }
+
   try {
     const resp = await fetch("https://clob.polymarket.com/order", {
       method: "POST",
@@ -22,10 +22,8 @@ app.post("/order", async (req, res) => {
       body: JSON.stringify(req.body),
     });
     const data = await resp.json();
-    res.status(resp.status).json(data);
+    return res.status(resp.status).json(data);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: e.message });
   }
-});
-
-app.listen(process.env.PORT || 3000, () => console.log("Proxy ready on port", process.env.PORT || 3000));
+}
